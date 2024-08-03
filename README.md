@@ -1,152 +1,130 @@
-
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-gH2yIJqKdNHPEq0n4Mqa/HGKIhSkIHeL5AyhkYV8i59U5AR6csBvApHHNl/vI1Bx" crossorigin="anonymous">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Scanner</title>
-</head>
-<style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Scanner</title>
+    <style>
     body {
-        background-color: gold;
-      
-        font-family: Arial, sans-serif;
-        
-    }
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #f5f5f5;
+}
 
-    .container {
-        max-width: 800px;
-        
-        margin: 0 auto;
-        
-        padding: 20px;
-       
-    }
+.card {
+    text-align: center;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
 
-    h1 {
-        text-align: center;
-       
-        color: black;
-       
-    }
+h1 {
+    margin-bottom: 20px;
+}
 
-    #my-qr-reader {
-        width: 100%;
-         max-width: 400px;
-        
-        margin: 0 auto;
-       
-    }
-
-    #you-qr-result {
-        margin-top: 20px;
-        background-color: grey;
-        padding: 10px;
-        border-radius: 10px;
-    }
-
-    .scanned-item {
-        margin-bottom: 5px;
-    }
-
-    .btn {
-        display: block;
-      
-        margin: 20px auto;
-        
-        padding: 10px 20px;
-       
-        background-color: black;
-        
-        color: #fff;
-       
-        border: none;
-        
-        border-radius: 5px;
-       
-        cursor: pointer;
-        transition: background-color 0.3s ease;
-    }
-
-    .btn:hover {
-        background-color: grey;
-    }
-
-    @media (max-width: 768px) {
-        .container {
-            padding: 10px;
+#qr-result {
+    margin-top: 20px;
+    font-weight: bold;
+}
+        #video {
+            width: 100%;
+            max-width: 600px;
         }
-    }
-</style>
+
+        canvas {
+            display: none;
+        }
+    </style>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous" />
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+</head>
 
 <body>
-    <h1 class="text-center">--------AKASH--------</h1>
-    <h1>Scan QR </h1>
+    <div class="container mt-5">
+        <h1 class="text-center"><b>WELCOME</b></h1>
+        <div class="card">
+            <h1>QR Scanner</h1>
+            <div class="d-flex flex-row">
+                <button class="mr-2 " onclick="openCamera()">Scan QR Code</button>
+                <input type="file" accept="image/*" onchange="uploadQR(event)">
+            </div>
+        </div>
+        <video id="video" playsinline></video>
+        <canvas id="canvas"></canvas>
+        <div id="qrResult"></div>
 
-    <div style="display: flex; justify-content: center">
-        <div id="my-qr-reader" style="width: 600px"></div>
     </div>
-    <h2>SCANNED QR:</h2>
-    <div id="you-qr-result"></div>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+    <script src="https://rawgit.com/schmich/instascan-builds/master/instascan.min.js"></script>
 
-    <script src="https://unpkg.com/html5-qrcode"></script>
     <script>
-        function domReady(fn) {
-            if (
-                document.readyState === "complete" ||
-                document.readyState === "interactive"
-            ) {
-                setTimeout(fn, 1);
-            } else {
-                document.addEventListener("DOMContentLoaded", fn);
-            }
+        // Initialize an empty set to store scanned QR data
+        const scannedData = new Set();
+
+        // Function to open camera and scan QR code
+        function openCamera() {
+            const video = document.getElementById('video');
+            const canvas = document.getElementById('canvas');
+            const qrResult = document.getElementById('qrResult');
+
+            const scanner = new Instascan.Scanner({
+                video: video
+            });
+
+            scanner.addListener('scan', function(content) {
+                if (!scannedData.has(content)) {
+                    scannedData.add(content);
+                    displayQRData(content);
+                } else {
+                    Swal.fire('Error', 'This QR code has already been scanned.', 'error');
+                }
+            });
+
+            Instascan.Camera.getCameras().then(function(cameras) {
+                if (cameras.length > 0) {
+                    scanner.start(cameras[0]);
+                } else {
+                    console.error('No cameras found.');
+                    Swal.fire('Error', 'No cameras found.', 'error');
+                }
+            }).catch(function(error) {
+                console.error('Error accessing camera:', error);
+                Swal.fire('Error', 'Error accessing camera.', 'error');
+            });
         }
 
-        domReady(function () {
-            var scannedQRData = new Set(); // Set to store scanned QR data
+        // Function to upload QR code image file
+        function uploadQR(event) {
+            const file = event.target.files[0];
+            const reader = new FileReader();
 
-            function downloadScannedData() {
-                var dataToDownload = Array.from(scannedQRData).join('\n');
-                var blob = new Blob([dataToDownload], {
-                    type: 'text/plain'
-                });
-                var url = window.URL.createObjectURL(blob);
-                var a = document.createElement('a');
-                a.href = url;
-                a.download = 'scanned_qr_data.txt';
-                document.body.appendChild(a);
-                a.click();
-                window.URL.revokeObjectURL(url);
-                document.body.removeChild(a);
-            }
-
-            function onScanSuccess(decodeText, decodeResult) {
-                if (!scannedQRData.has(decodeText)) { // Check if QR code is not already scanned
-                    scannedQRData.add(decodeText); // Add scanned QR data to the set
-                    // Display all scanned QR data in the div
-                    var scannedResultDiv = document.getElementById("you-qr-result");
-                    var newItem = document.createElement('div');
-                    newItem.className = 'scanned-item';
-                    newItem.textContent = scannedQRData.size + '. ' + decodeText;
-                    scannedResultDiv.appendChild(newItem);
+            reader.onload = function(e) {
+                const qrData = e.target.result;
+                if (!scannedData.has(qrData)) {
+                    scannedData.add(qrData);
+                    displayQRData(qrData);
+                } else {
+                    Swal.fire('Error', 'This QR code has already been scanned.', 'error');
                 }
-            }
+            };
 
-            var htmlScanner = new Html5QrcodeScanner("my-qr-reader", {
-                fps: 10,
-                qrbox: 250,
-            });
+            reader.readAsDataURL(file);
+        }
 
-            htmlScanner.render(onScanSuccess);
-
-            // Download button event listener
-            document.getElementById('downloadDataButton').addEventListener('click', function () {
-                downloadScannedData();
-            });
-        });
+        // Function to display QR data
+        function displayQRData(qrData) {
+            const qrResult = document.getElementById('qrResult');
+            qrResult.innerHTML += <p>${qrData}</p>;
+        }
     </script>
-    <button id="downloadDataButton" class="btn btn-primary">Download Scanned Data</button>
 </body>
 
 </html>
