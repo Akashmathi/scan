@@ -6,32 +6,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QR Scanner</title>
     <style>
-    body {
-    font-family: Arial, sans-serif;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    margin: 0;
-    background-color: #f5f5f5;
-}
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f5f5f5;
+        }
 
-.card {
-    text-align: center;
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
+        .card {
+            text-align: center;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
 
-h1 {
-    margin-bottom: 20px;
-}
+        h1 {
+            margin-bottom: 20px;
+        }
 
-#qr-result {
-    margin-top: 20px;
-    font-weight: bold;
-}
+        #qr-result {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+
         #video {
             width: 100%;
             max-width: 600px;
@@ -59,8 +60,7 @@ h1 {
         </div>
         <video id="video" playsinline></video>
         <canvas id="canvas"></canvas>
-        <div id="qrResult"></div>
-
+        <div id="qr-result"></div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
     <script src="https://rawgit.com/schmich/instascan-builds/master/instascan.min.js"></script>
@@ -73,7 +73,7 @@ h1 {
         function openCamera() {
             const video = document.getElementById('video');
             const canvas = document.getElementById('canvas');
-            const qrResult = document.getElementById('qrResult');
+            const qrResult = document.getElementById('qr-result');
 
             const scanner = new Instascan.Scanner({
                 video: video
@@ -121,8 +121,10 @@ h1 {
 
         // Function to display QR data
         function displayQRData(qrData) {
-            const qrResult = document.getElementById('qrResult');
-            qrResult.innerHTML += <p>${qrData}</p>;
+            const qrResult = document.getElementById('qr-result');
+            const p = document.createElement('p');
+            p.textContent = qrData;
+            qrResult.appendChild(p);
         }
     </script>
 </body>
